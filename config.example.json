@@ -1,0 +1,10 @@
+{
+  "_comment": "Copy to %APPDATA%\\claude-krita-bridge\\config.json and keep only what you change. 'python server\\config.py' prints the settings in use.",
+  "krita_exe": "C:\\Program Files\\Krita (x64)\\bin\\krita.exe",
+  "layer_label": 6,
+  "ai": {
+    "python": "%LOCALAPPDATA%\\claude-krita-bridge\\ai-venv\\Scripts\\python.exe",
+    "models_dir": "%LOCALAPPDATA%\\claude-krita-bridge\\models",
+    "env": {"OPENBLAS_NUM_THREADS": "4", "OMP_NUM_THREADS": "4"}
+  }
+}

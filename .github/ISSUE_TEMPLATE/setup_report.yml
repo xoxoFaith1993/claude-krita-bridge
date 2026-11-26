@@ -1,0 +1,25 @@
+name: Setup report (it works / it doesn't on my PC)
+description: Tell us how the bridge runs on your setup - successes help as much as failures
+labels: [setup-report]
+body:
+  - type: dropdown
+    id: result
+    attributes:
+      label: Result
+      options: [Everything works, Mostly works, Doesn't connect]
+    validations:
+      required: true
+  - type: input
+    id: app
+    attributes:
+      label: App version
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version and display scaling
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes (which tools worked, which didn't; GPU and PyTorch build if you use the AI tools)

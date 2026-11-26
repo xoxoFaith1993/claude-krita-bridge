@@ -1,0 +1,25 @@
+# Tools
+
+Generated from `server/server.py` by `tools/gen_tools_md.py` (17 tools). Required arguments are in **bold**.
+
+Layers are found by name or uid; the default is the active layer.
+
+| Tool | Arguments | What it does |
+|---|---|---|
+| `krita_launch` | path (string) | Start Krita (if it isn't open) and wait for the Claude Bridge plugin. Optionally open a file. Returns krita_status. |
+| `krita_status` | - | Krita version, open documents, and the active document's size and layer stack (top first: name, uid, type, visible, opacity 0-100, blend, colour label, bounds). Use first. |
+| `krita_new` | **w** (integer), **h** (integer), name (string), background (string) | Create a new RGBA document (pixels) and show it. background as '#RRGGBB' (optional). |
+| `krita_open` | **path** (string) | Open an image or .kra file in Krita and show it. |
+| `krita_add_image` | **path** (string), name (string), x (integer), y (integer), fit (contain \| cover \| width \| height), scale (number), opacity (number), blend (string), above (string), parent (string) | Add a picture file (PNG cutout, JPG...) as a new paint layer in the active document. Centred unless x/y (top-left, px) are given. fit (contain/cover/width/height) sizes it to the canvas first; scale then multiplies. Gets a red colour label (Claude's work). above = put it above that layer; parent = inside that group. |
+| `krita_layer` | layer (string), rename (string), visible (boolean), opacity (number), blend (string), label (integer), locked (boolean), move_to (array), move_by (array), scale (number), rotate (number), flip (horizontal \| vertical), duplicate (boolean), raise (boolean), lower (boolean), delete (boolean) | Change a layer (by name or uid; default the active layer): rename, visible, opacity 0-100, blend mode (e.g. normal, multiply, screen, overlay, soft_light_svg, color), colour label 0-8, locked, move_to [x,y] (content top-left), move_by [dx,dy], scale (factor, about its centre), rotate (degrees), flip horizontal/vertical, duplicate, raise / lower one step, delete. |
+| `krita_mask` | layer (string), **path** (string), invert (boolean), name (string) | Add a transparency mask to a layer from a greyscale image (white = keep, black = hide), e.g. a cutout mask from SAM/BiRefNet. Scaled to the canvas if sizes differ. |
+| `krita_select` | **mode** (none \| all \| rect \| from_file), rect (array), path (string) | Set the selection: none, all, rect [x,y,w,h], or from_file (greyscale image, white = selected). |
+| `krita_filter` | layer (string), **name** (string), params (object) | Apply a Krita filter to a layer, e.g. 'gaussian blur' {horizRadius, vertRadius}, 'unsharp', 'desaturate', 'levels', 'hsvadjustment' {h,s,v}. Unknown names list the available filters. |
+| `krita_snapshot` | layer (string), max_side (integer) | See the canvas (or one layer): returns a PNG of what the user sees, scaled to max_side (default 1280). Use after changes and to see the user's own hand edits. |
+| `krita_export` | **path** (string) | Export the active document flattened to a file (png/jpg/webp/psd by extension). |
+| `krita_save` | path (string) | Save the active document (.kra keeps layers). With path: save as. |
+| `krita_cutout` | layer (string), path (string), what (string), pick (string), merge (boolean), all (boolean), box (string), name (string), add (boolean) | Optional AI tool (needs ai_tools set up): find an object by name in a layer (default active) or a picture file, mask it exactly (SAM 2.1 + BiRefNet edges) and add it as a new red layer in the same spot. what: 'dog' or several 'dog, ball' (merge=true joins them into one piece). Returns the numbered matches + a preview image of them; if it took the wrong one, run again with pick='2' (or '1,3'). box='x0,y0,x1,y1' skips the search. ~1-1.5 min. |
+| `krita_remove` | layer (string), path (string), what (string), pick (string), mask (string), hide_original (boolean) | Optional AI tool: object removal (content-aware fill, LaMa): erase a named object from a layer (or file) and fill it from its surroundings; adds the result as a new red layer above and hides the original. Best for small/medium things (people in the background, signs, wires); very large areas come out smeary. pick/mask work like krita_cutout. |
+| `krita_match` | **layer** (string), region (array), strength (number), shadow (boolean) | Optional AI-tools helper: blend a pasted cut-out into the scene: shift its colour/brightness toward what's under it on the canvas (or region [x,y,w,h]), strength 0-1 (default 0.5), optional soft drop shadow. Adds a '(matched)' layer and hides the original. |
+| `krita_show` | - | Bring Krita's window to the front, maximized (when the user can't see it). Windows may only flash the taskbar icon instead. |
+| `krita_exec` | **code** (string) | Run Python inside Krita (names: Krita, app, doc, args, QImage, QPointF, QRect, InfoObject, Selection, node_by(name_or_uid), refresh()). A single expression returns its value; for statements assign to `result`. print() output is returned. |

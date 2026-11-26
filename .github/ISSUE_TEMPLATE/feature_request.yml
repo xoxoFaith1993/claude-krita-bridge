@@ -1,0 +1,22 @@
+name: Idea or new tool
+description: Suggest a feature, a new tool, or an improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like Claude to be able to do?
+      description: Describe it as you would ask Claude, e.g. "add a text layer with this title in the corner".
+    validations:
+      required: true
+  - type: textarea
+    id: how
+    attributes:
+      label: Any idea how? (optional)
+      description: An API call, a menu path in the app, a similar project...
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Want to help build it?
+      options:
+        - label: I'd like to try a pull request for this

@@ -1,0 +1,10 @@
+# Optional AI tools. Install PyTorch first (pick the build for your GPU at pytorch.org), then:
+#   python -m pip install -r ai_tools\requirements.txt
+transformers>=4.56   # Sam2Model / Grounding DINO
+huggingface_hub
+numpy
+pillow
+opencv-python-headless
+timm                 # BiRefNet remote code
+einops               # BiRefNet remote code
+kornia               # BiRefNet remote code

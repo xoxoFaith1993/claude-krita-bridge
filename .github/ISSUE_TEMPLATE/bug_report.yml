@@ -1,0 +1,40 @@
+name: Bug report
+description: Something didn't work
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks! Please check the pasted text for anything private (folder names, project names) before submitting.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you asked Claude, which tool ran, and the error text.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+  - type: input
+    id: app
+    attributes:
+      label: App version
+      placeholder: e.g. Krita 5.3.1
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version and display scaling
+      placeholder: e.g. Windows 11 25H2, 125%
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you install it?
+      options: [Setup.exe, from source]
+  - type: textarea
+    id: config
+    attributes:
+      label: Output of `python server\config.py` (optional, check it for private paths first)
+      render: text

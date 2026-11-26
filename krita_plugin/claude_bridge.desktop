@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=Krita/PythonPlugin
+X-KDE-Library=claude_bridge
+X-Python-2-Compatible=false
+Name=Claude Bridge
+Comment=Lets Claude (via the krita MCP server) control this Krita over a local socket. Localhost only, token-protected.
