@@ -16,6 +16,16 @@ ap.add_argument("--kritarc", help="kritarc file (default %%LOCALAPPDATA%%\\krita
 ap.add_argument("--uninstall", action="store_true")
 a = ap.parse_args()
 
+try:   # Store / Install Manager Pythons write AppData into a private copy that Krita never sees
+    import ctypes
+    _n = ctypes.c_uint32(0)
+    if not (a.resources and a.kritarc) and ctypes.windll.kernel32.GetCurrentPackageFullName(ctypes.byref(_n), None) != 15700:
+        raise SystemExit('This Python is a Microsoft Store / Python Install Manager build: it writes AppData into a '
+                         'private copy that Krita cannot see. Run this with the installer\'s bundled Python or '
+                         'Python from python.org (or pass both --resources and --kritarc with the real paths).')
+except (AttributeError, OSError):
+    pass
+
 src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "krita_plugin")
 pykrita = os.path.join(a.resources or os.path.join(os.environ["APPDATA"], "krita"), "pykrita")
 dst = os.path.join(pykrita, "claude_bridge")

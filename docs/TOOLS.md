@@ -1,11 +1,12 @@
 # Tools
 
-Generated from `server/server.py` by `tools/gen_tools_md.py` (17 tools). Required arguments are in **bold**.
+Generated from `server/server.py` by `tools/gen_tools_md.py` (19 tools). Required arguments are in **bold**.
 
 Layers are found by name or uid; the default is the active layer.
 
 | Tool | Arguments | What it does |
 |---|---|---|
+| `krita_doctor` | deep (boolean) | Check every link from Claude to Krita and say what is wrong and how to fix it: settings, Krita program, plugin installed / up to date / switched on, Krita running, port, token, document open, optional AI tools (Python, models; deep=true also tests PyTorch, which briefly uses a lot of memory) and optional local AI (Ollama, vision model). Read-only: starts nothing. Use it first when a tool fails, and give the user the fix lines in plain words. |
 | `krita_launch` | path (string) | Start Krita (if it isn't open) and wait for the Claude Bridge plugin. Optionally open a file. Returns krita_status. |
 | `krita_status` | - | Krita version, open documents, and the active document's size and layer stack (top first: name, uid, type, visible, opacity 0-100, blend, colour label, bounds). Use first. |
 | `krita_new` | **w** (integer), **h** (integer), name (string), background (string) | Create a new RGBA document (pixels) and show it. background as '#RRGGBB' (optional). |
@@ -18,7 +19,8 @@ Layers are found by name or uid; the default is the active layer.
 | `krita_snapshot` | layer (string), max_side (integer) | See the canvas (or one layer): returns a PNG of what the user sees, scaled to max_side (default 1280). Use after changes and to see the user's own hand edits. |
 | `krita_export` | **path** (string) | Export the active document flattened to a file (png/jpg/webp/psd by extension). |
 | `krita_save` | path (string) | Save the active document (.kra keeps layers). With path: save as. |
-| `krita_cutout` | layer (string), path (string), what (string), pick (string), merge (boolean), all (boolean), box (string), name (string), add (boolean) | Optional AI tool (needs ai_tools set up): find an object by name in a layer (default active) or a picture file, mask it exactly (SAM 2.1 + BiRefNet edges) and add it as a new red layer in the same spot. what: 'dog' or several 'dog, ball' (merge=true joins them into one piece). Returns the numbered matches + a preview image of them; if it took the wrong one, run again with pick='2' (or '1,3'). box='x0,y0,x1,y1' skips the search. ~1-1.5 min. |
+| `krita_cutout` | layer (string), path (string), what (string), pick (string), merge (boolean), all (boolean), box (string), name (string), add (boolean), check (boolean), add_anyway (boolean) | Optional AI tool (needs ai_tools set up): find an object by name in a layer (default active) or a picture file, mask it exactly (SAM 2.1 + BiRefNet edges) and add it as a new red layer in the same spot. what: 'dog' or several 'dog, ball' (merge=true joins them into one piece). Returns the numbered matches + a preview image of them; if it took the wrong one, run again with pick='2' (or '1,3'). box='x0,y0,x1,y1' skips the search. If the optional local AI (Ollama) is available, each piece is first checked by the local vision model; if any piece doesn't look like `what`, NOTHING is added (see warning; check=false skips the check, add_anyway=true adds regardless). ~1-1.5 min. |
+| `krita_look` | layer (string), max_side (integer) | Optional local AI (needs Ollama + a vision model): describe the canvas or one layer offline - summary, subjects, colours, and visible editing problems (hard edges, halos, mismatched light, seams). Returns the description and the picture it looked at. Cheaper than sending big images around; use krita_snapshot to see it yourself. |
 | `krita_remove` | layer (string), path (string), what (string), pick (string), mask (string), hide_original (boolean) | Optional AI tool: object removal (content-aware fill, LaMa): erase a named object from a layer (or file) and fill it from its surroundings; adds the result as a new red layer above and hides the original. Best for small/medium things (people in the background, signs, wires); very large areas come out smeary. pick/mask work like krita_cutout. |
 | `krita_match` | **layer** (string), region (array), strength (number), shadow (boolean) | Optional AI-tools helper: blend a pasted cut-out into the scene: shift its colour/brightness toward what's under it on the canvas (or region [x,y,w,h]), strength 0-1 (default 0.5), optional soft drop shadow. Adds a '(matched)' layer and hides the original. |
 | `krita_show` | - | Bring Krita's window to the front, maximized (when the user can't see it). Windows may only flash the taskbar icon instead. |

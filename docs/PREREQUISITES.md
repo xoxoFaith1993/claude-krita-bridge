@@ -10,6 +10,13 @@ This project is GPL-3.0. Nothing below is part of it except what the installer b
 | Python (PSF) | bundled by the installer | PSF License v2 (redistribution allowed; the licence file ships inside `python\`) | yes | [python.org](https://www.python.org/downloads/windows/) |
 | Inno Setup | only to build the installer | Inno Setup License (free for any use; commercial users are asked to buy a licence) | source available | [jrsoftware.org](https://jrsoftware.org/isinfo.php) |
 
+## Optional local AI
+
+| Item | Licence | Where |
+|---|---|---|
+| Ollama | MIT | [ollama.com](https://ollama.com) |
+| qwen3-vl vision model (default; any Ollama vision model works) | Apache-2.0 (Qwen3-VL-8B-Instruct model card) | `ollama pull qwen3-vl:8b-instruct` |
+
 ## Optional AI tools
 
 | Item | Licence | Where |

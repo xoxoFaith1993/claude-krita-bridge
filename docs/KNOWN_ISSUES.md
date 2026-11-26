@@ -17,4 +17,11 @@ The honest list. It's a work in progress, and fixes are welcome.
 - **AI tools:** the models load fresh each call (about a minute per run) to keep GPU memory free. A name search
   can pick the wrong object, so use the numbered preview and `pick`. LaMa smears very large holes. See
   [ai_tools/README.md](../ai_tools/README.md).
+- **Local AI check:** small vision models judge cut-outs well but not perfectly. If a correct piece is refused,
+  run again with `add_anyway=true`; to skip the check, use `check=false`.
+- **Microsoft Store / Python Install Manager Pythons** see a private copy of `%APPDATA%`. A plugin installed
+  with one can be invisible to Krita, so `install_plugin.py` refuses to run with one. Use the installer (it
+  bundles its own Python) or Python from python.org.
+- **Both bridges share one Ollama safely:** the watcher waits until FL Studio *and* Krita are closed before it
+  stops an Ollama it started, and it never stops one it didn't start (it checks the exact process).
 - `krita_exec` runs any Python inside Krita, by design (localhost only, token-protected).

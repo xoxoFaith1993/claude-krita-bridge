@@ -42,6 +42,9 @@ python ai_tools\cutout.py match  cutout.png scene.jpg [--region x0,y0,x1,y1] [--
 ```
 
 ## Tips and limits
+- With the optional local AI (Ollama + a vision model), every cut-out is checked before it's added; if any
+  piece doesn't look like what you asked for, nothing is added and you get a warning (`check=false` skips it, `add_anyway=true`
+  overrides it).
 - Every search writes `<image>_found.jpg` with each match **numbered**. A name search can grab the wrong object
   (a small figure in the background, say), so check the preview and re-run with `pick`.
 - `merge` joins several matches into one piece (a person and what they hold).

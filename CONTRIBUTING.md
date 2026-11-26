@@ -18,7 +18,8 @@ installed with Setup.exe or from source. Please don't attach pictures you don't 
 - **New layers get the user's colour label** (`args.get("_new_label", 6)`). Never change the user's own layers
   unless asked, and keep their position and stacking when replacing one.
 - **Nothing machine-specific in code:** paths and options go in `server/config.py`.
-- New or changed tool: run `python tools\gen_tools_md.py`. Before a PR: `python tests\test_protocol.py`, and say
+- New or changed tool: run `python tools\gen_tools_md.py`. Before a PR: `python tests\test_protocol.py` and `tests\test_doctor.py` (add a doctor check with a plain fix
+  line for any new way things can break), and say
   what you tested by hand in Krita (`tests\smoke.py`).
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for how to add a tool.

@@ -23,12 +23,21 @@ canvas, your own edits included, at any time.
 - **Masks and selections:** transparency masks from greyscale images; select all, a rectangle or from a file.
 - **Filters:** any Krita filter with its settings (blur, unsharp, levels, HSV, desaturate...).
 - **See the canvas:** `krita_snapshot` returns a picture of the whole canvas or one layer.
+- **A built-in doctor:** `krita_doctor` (or `python tools\doctor.py`) checks every link: Krita, the plugin
+  (installed, up to date, switched on), the port and token, an open document, the AI tools' Python and models,
+  and the local AI. It says in plain words what's wrong and how to fix it, instead of a tool just failing.
+- **Optional local AI (Ollama), fully offline:**
+  - Each cut-out is **checked by a local vision model** before it's added. A piece that isn't what you asked
+    for ("dog" grabbed the cat) is caught, and nothing is added until you pick the right one.
+  - `krita_look` describes the canvas or a layer, including visible problems (hard edges, halos, mismatched
+    light).
+  - Ollama starts only when needed and stops after Krita closes, and only if the bridge started it.
 - **Anything else:** `krita_exec` runs Python inside Krita with its API.
 - **Optional AI tools** (your GPU, fully local): **cut out** an object by name ("dog, ball"), **remove** an
   object with content-aware fill, and **match** a pasted cut-out's colours to the scene, with a soft shadow.
   See [ai_tools/README.md](ai_tools/README.md).
 
-All 17 tools: [docs/TOOLS.md](docs/TOOLS.md).
+All 19 tools: [docs/TOOLS.md](docs/TOOLS.md).
 
 ## How it works
 
@@ -49,6 +58,7 @@ MCP server sends it Python snippets that run on Krita's own thread. Details and 
 | [Krita](https://krita.org) 5.x (GPL-3.0, free) | tested on 5.3; Python plugins must be available (they are in the official Windows builds) |
 | [Claude Code](https://claude.com/claude-code) or another MCP client | |
 | Python 3.10+ | bundled by the installer; standard library only |
+| *Optional local AI:* [Ollama](https://ollama.com) + a vision model, e.g. `qwen3-vl:8b-instruct` | for `krita_look` and checking cut-outs |
 | *Optional AI tools:* Python with PyTorch + about 2.4 GB of models | Apache-2.0 / MIT models, downloaded from their authors, not bundled ([docs/PREREQUISITES.md](docs/PREREQUISITES.md)) |
 
 ## Install
@@ -58,7 +68,8 @@ MCP server sends it Python snippets that run on Krita's own thread. Details and 
 1. **Close Krita.** Download `Claude-Krita-Bridge-Setup-<version>.exe` from
    [Releases](https://github.com/xoxoFaith1993/claude-krita-bridge/releases) and run it (per user, no admin, own Python).
 2. Leave both boxes ticked: *install and switch on the Krita plugin* and *register with Claude Code*.
-3. Start Krita, then start a new Claude Code session and ask: *"Check the Krita connection."*
+3. Start Krita, then start a new Claude Code session and ask: *"Check the Krita connection."* If anything
+   fails, ask *"run the Krita doctor"* (or run `python tools\doctor.py`) for the exact fix.
 
 ### Option 2: from source
 

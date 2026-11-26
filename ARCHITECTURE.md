@@ -15,6 +15,8 @@
 | `server/server.py` | MCP server (JSON-RPC 2.0 over stdio, standard library only). Holds the code bodies sent to Krita and the `TOOLS` table. |
 | `server/config.py` | Settings: defaults, `krita.exe` auto-detection, `config.json`. |
 | `ai_tools/cutout.py` | Command-line AI tool run as a subprocess in your PyTorch environment; prints one JSON line. |
+| `server/doctor.py` | `krita_doctor`: ordered read-only checks with a plain fix per problem (also `tools/doctor.py`). |
+| `server/local_eyes.py`, `ollama_ctl.py`, `ollama_guard.py` | Optional local AI: vision model calls (`krita_look`, the cut-out check), start Ollama on demand, stop it after Krita closes (only if the bridge started it). |
 | `install_plugin.py` | Copies the plugin and enables it in `kritarc`. |
 | `tools/connect_claude.py` | Registers the MCP server with Claude Code. |
 

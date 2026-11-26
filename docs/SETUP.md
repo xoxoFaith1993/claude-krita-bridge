@@ -35,9 +35,22 @@ There's also a test script that uses only generated pictures:
 ```powershell
 python tests\smoke.py            # needs Krita running with the plugin
 python tests\test_protocol.py    # offline: fake plugin, no Krita needed
+python tests\test_doctor.py      # offline: the doctor's diagnosis
 ```
 
+## 4. Optional: local AI (Ollama)
+
+Install [Ollama](https://ollama.com) and pull a vision model: `ollama pull qwen3-vl:8b-instruct` (about 6 GB).
+Then `krita_look` works, and every `krita_cutout` is checked before it's added. The bridge starts Ollama when it's
+needed and stops it about 2 minutes after Krita closes, but only if the bridge started it. Change this with
+`local_ai.auto_start` / `local_ai.auto_stop_after_app_closed_seconds`, use another model with `vision_model`, or
+turn it all off with `local_ai.enabled: false`.
+
 ## Troubleshooting
+
+**First, run the doctor:** ask Claude *"run krita_doctor"*, or run `python tools\doctor.py` (add `--deep` to also
+test the AI tools' PyTorch, which briefly uses a lot of memory). It checks each link in order and prints the fix
+for the first thing that's wrong. It only reads; it starts nothing.
 
 | Symptom | Fix |
 |---|---|

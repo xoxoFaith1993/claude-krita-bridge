@@ -28,11 +28,11 @@ def kr(code, timeout=120, **args):
     try:
         token = open(TOKEN_FILE).read().strip()
     except OSError:
-        raise BridgeError("Krita isn't running with the Claude Bridge plugin (no token file). Use krita_launch.")
+        raise BridgeError("Krita isn't running with the Claude Bridge plugin (no token file). Use krita_launch, or krita_doctor for a step-by-step check.")
     try:
         s = socket.create_connection(("127.0.0.1", PORT), timeout=5)
     except OSError:
-        raise BridgeError("Can't reach Krita on port %d. Is Krita open? Use krita_launch." % PORT)
+        raise BridgeError("Can't reach Krita on port %d. Is Krita open? Use krita_launch, or krita_doctor for a step-by-step check." % PORT)
     s.settimeout(timeout)
     args["_new_label"] = LABEL             # colour label for NEW layers only (ADD_IMAGE); never applied to edits
     s.sendall(json.dumps({"token": token, "code": code, "args": args}).encode("utf-8") + b"\n")
@@ -282,6 +282,17 @@ def launch(a):
                       "(then restart Krita).")
 
 
+def look(a):
+    """Optional local vision: describe the canvas (or a layer) with the local model."""
+    import local_eyes
+    ok, why = local_eyes.available()
+    if not ok:
+        raise BridgeError("krita_look needs the optional local AI: " + why)
+    snap = snapshot({"layer": a.get("layer"), "max_side": a.get("max_side", 1024)})
+    desc = local_eyes.look(snap["file"])
+    return {"description": desc, "model": local_eyes.MODEL, "file": snap["file"], "_image": snap["_image"]}
+
+
 def snapshot(a):
     os.makedirs(SNAP_DIR, exist_ok=True)
     out = os.path.join(SNAP_DIR, "snap_%d.png" % int(time.time() * 1000))
@@ -371,7 +382,33 @@ def cutout(a):
     if a.get("all"): argv.append("--all")
     res, found = _cutout(*argv)
     out = {"matches": found, "objects": res["objects"], "mask": res["mask"]}
-    if a.get("add", True):
+    # optional: the local vision model checks each piece really is what was asked for (catches a wrong match)
+    wrong = []
+    if a.get("what") and not a.get("box") and CFG["local_ai"].get("check_cutouts", True) and a.get("check", True):
+        try:
+            import local_eyes
+            ok, why = local_eyes.available()
+        except Exception as e:
+            ok, why = False, 'local check unavailable (%s)' % e
+        if ok:
+            checks = []
+            for i, o in enumerate(res["objects"], 1):
+                try:
+                    c = local_eyes.check_piece(o.get("check_preview") or o["cutout"], a["what"])
+                except Exception as e:
+                    c = {"error": str(e)}
+                checks.append(dict(c, piece=i))
+                if c.get("match") is False:
+                    wrong.append(i)
+            out["local_check"] = checks
+        else:
+            out["local_check"] = "skipped: " + why
+    if wrong and not a.get("add_anyway"):
+        out["added_layers"] = []
+        out["warning"] = ("The local vision model says piece(s) %s don't look like '%s', so nothing was added. Look at "
+                          "the numbered preview, then run again with pick='N' (or add_anyway=true if it's right)."
+                          % (", ".join(map(str, wrong)), a["what"]))
+    elif a.get("add", True):
         added = []
         for o in res["objects"]:
             name = a.get("name") or ((a.get("what") or "cutout").split(",")[0].strip() + " (cut out)")
@@ -431,6 +468,8 @@ STR = {"type": "string"}
 PAIR = {"type": "array", "items": NUM, "minItems": 2, "maxItems": 2}
 
 TOOLS = [
+    ("krita_doctor", "Check every link from Claude to Krita and say what is wrong and how to fix it: settings, Krita program, plugin installed / up to date / switched on, Krita running, port, token, document open, optional AI tools (Python, models; deep=true also tests PyTorch, which briefly uses a lot of memory) and optional local AI (Ollama, vision model). Read-only: starts nothing. Use it first when a tool fails, and give the user the fix lines in plain words.",
+     {"deep": BOOL}, [], lambda a: __import__("doctor").diagnose(kr, bool(a.get("deep")))),
     ("krita_launch", "Start Krita (if it isn't open) and wait for the Claude Bridge plugin. Optionally open a file. Returns krita_status.",
      {"path": STR}, [], launch),
     ("krita_status", "Krita version, open documents, and the active document's size and layer stack (top first: name, uid, type, visible, opacity 0-100, blend, colour label, bounds). Use first.",
@@ -457,9 +496,12 @@ TOOLS = [
      {"layer": STR, "max_side": INT}, [], snapshot),
     ("krita_export", "Export the active document flattened to a file (png/jpg/webp/psd by extension).", {"path": STR}, ["path"], lambda a: kr(EXPORT, **a)),
     ("krita_save", "Save the active document (.kra keeps layers). With path: save as.", {"path": STR}, [], lambda a: kr(SAVE, **a)),
-    ("krita_cutout", "Optional AI tool (needs ai_tools set up): find an object by name in a layer (default active) or a picture file, mask it exactly (SAM 2.1 + BiRefNet edges) and add it as a new red layer in the same spot. what: 'dog' or several 'dog, ball' (merge=true joins them into one piece). Returns the numbered matches + a preview image of them; if it took the wrong one, run again with pick='2' (or '1,3'). box='x0,y0,x1,y1' skips the search. ~1-1.5 min.",
-     {"layer": STR, "path": STR, "what": STR, "pick": STR, "merge": BOOL, "all": BOOL, "box": STR, "name": STR, "add": BOOL},
+    ("krita_cutout", "Optional AI tool (needs ai_tools set up): find an object by name in a layer (default active) or a picture file, mask it exactly (SAM 2.1 + BiRefNet edges) and add it as a new red layer in the same spot. what: 'dog' or several 'dog, ball' (merge=true joins them into one piece). Returns the numbered matches + a preview image of them; if it took the wrong one, run again with pick='2' (or '1,3'). box='x0,y0,x1,y1' skips the search. If the optional local AI (Ollama) is available, each piece is first checked by the local vision model; if any piece doesn't look like `what`, NOTHING is added (see warning; check=false skips the check, add_anyway=true adds regardless). ~1-1.5 min.",
+     {"layer": STR, "path": STR, "what": STR, "pick": STR, "merge": BOOL, "all": BOOL, "box": STR, "name": STR, "add": BOOL,
+      "check": BOOL, "add_anyway": BOOL},
      [], cutout),
+    ("krita_look", "Optional local AI (needs Ollama + a vision model): describe the canvas or one layer offline - summary, subjects, colours, and visible editing problems (hard edges, halos, mismatched light, seams). Returns the description and the picture it looked at. Cheaper than sending big images around; use krita_snapshot to see it yourself.",
+     {"layer": STR, "max_side": INT}, [], look),
     ("krita_remove", "Optional AI tool: object removal (content-aware fill, LaMa): erase a named object from a layer (or file) and fill it from its surroundings; adds the result as a new red layer above and hides the original. Best for small/medium things (people in the background, signs, wires); very large areas come out smeary. pick/mask work like krita_cutout.",
      {"layer": STR, "path": STR, "what": STR, "pick": STR, "mask": STR, "hide_original": BOOL}, [], remove),
     ("krita_match", "Optional AI-tools helper: blend a pasted cut-out into the scene: shift its colour/brightness toward what's under it on the canvas (or region [x,y,w,h]), strength 0-1 (default 0.5), optional soft drop shadow. Adds a '(matched)' layer and hides the original.",

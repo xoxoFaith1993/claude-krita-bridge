@@ -30,12 +30,12 @@ To use a newer Python, pass `-PythonVersion` and `-PythonSha256`.
 ```powershell
 .\dist\Claude-Krita-Bridge-Setup-0.1.0.exe /VERYSILENT /CURRENTUSER /DIR="$env:TEMP\kb-test" /TASKS=""
 & "$env:TEMP\kb-test\python\python.exe" "$env:TEMP\kb-test\tests\test_protocol.py"
+& "$env:TEMP\kb-test\python\python.exe" "$env:TEMP\kb-test\tests\test_doctor.py"
 & "$env:TEMP\kb-test\unins000.exe" /VERYSILENT
 ```
 
-Note: the uninstaller also runs `install_plugin.py --uninstall` and `connect_claude.py --remove`. On a PC where
-you use the bridge for real, test in a separate Windows user or VM, or skip the uninstaller and delete the test
-folder by hand.
+With `/TASKS=""` nothing outside the test folder is touched, and the uninstaller only undoes the steps that this
+install did (it records them in `task-*.done` files), so your real plugin and Claude settings stay as they are.
 
 ## Releasing (maintainers)
 1. Bump `VERSION` in `server/server.py`, add a `CHANGELOG.md` entry, run `python tools\gen_tools_md.py --check`.

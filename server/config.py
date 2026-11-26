@@ -21,6 +21,17 @@ DEFAULTS = {
     'port': 47821,                           # must match PORT in the Krita plugin
     'snap_dir': os.path.join(DATA_DIR, 'snaps'),
     'layer_label': 6,                        # colour label for layers Claude adds (6 = red; 0 = none)
+    # optional local AI (Ollama): krita_look, and checking each cut-out is what was asked for
+    'ollama_host': 'http://localhost:11434',
+    'vision_model': 'qwen3-vl:8b-instruct',
+    'local_ai': {
+        'enabled': True,                       # false = never use Ollama, even if installed
+        'auto_start': True,                    # start `ollama serve` when a tool needs it
+        'auto_stop_after_app_closed_seconds': 120,   # stop it after Krita closes (only if the bridge started it); 0 = never
+        'ollama_exe': None,                    # null = auto-detect
+        'serve_env': {},                       # extra env vars for `ollama serve`
+        'check_cutouts': True,                 # after krita_cutout, ask the vision model if the piece matches "what"
+    },
     # optional AI tools (krita_cutout / krita_remove / krita_match), see ai_tools/README.md
     'ai': {
         'python': None,                      # python.exe of the environment with torch + transformers installed
@@ -62,6 +73,8 @@ def load():
             _merge(cfg, json.load(f))
     if os.environ.get('KRITA_EXE'):
         cfg['krita_exe'] = os.environ['KRITA_EXE']
+    if os.environ.get('OLLAMA_HOST') and cfg['ollama_host'] == DEFAULTS['ollama_host']:
+        cfg['ollama_host'] = os.environ['OLLAMA_HOST']
     return cfg
 
 

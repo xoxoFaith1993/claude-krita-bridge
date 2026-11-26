@@ -173,9 +173,16 @@ def cmd_cut(a):
         rgba = np.dstack([np.asarray(img), (alpha * 255).astype(np.uint8)])[y0:y1, x0:x1]
         tag = Path(a.image).stem + ("" if len(alphas) == 1 else f"_{k + 1}")
         cp = out / f"{tag}_cutout.png"
-        Image.fromarray(rgba, "RGBA").save(cp)
-        results.append({"cutout": str(cp), "x": int(x0), "y": int(y0), "w": int(x1 - x0), "h": int(y1 - y0),
-                        "score": round(score, 3), "edge": how})
+        piece = Image.fromarray(rgba, "RGBA")
+        piece.save(cp)
+        # small flattened preview on grey, for the optional local vision check (transparency confuses some models)
+        pv = Image.new("RGB", piece.size, (128, 128, 128))
+        pv.paste(piece, (0, 0), piece)
+        pv.thumbnail((768, 768))
+        pp = out / f"{tag}_check.jpg"
+        pv.save(pp, quality=85)
+        results.append({"cutout": str(cp), "check_preview": str(pp), "x": int(x0), "y": int(y0), "w": int(x1 - x0),
+                        "h": int(y1 - y0), "score": round(score, 3), "edge": how})
     mp = out / f"{Path(a.image).stem}_mask.png"
     Image.fromarray((union * 255).astype(np.uint8), "L").save(mp)
     print(json.dumps({"mask": str(mp), "image_size": list(img.size), "objects": results}))
